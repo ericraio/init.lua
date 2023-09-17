@@ -1,4 +1,27 @@
--- This file can be loaded by calling `lua require('plugins')` from your init.vim
+-- Install Packer automatically if it's not installed(Bootstraping)
+-- Hint: string concatenation is done by `..`
+local ensure_packer = function()
+    local fn = vim.fn
+    local install_path = fn.stdpath('data')..'/site/pack/packer/start/packer.nvim'
+    if fn.empty(fn.glob(install_path)) > 0 then
+        fn.system({'git', 'clone', '--depth', '1', 'https://github.com/wbthomason/packer.nvim', install_path})
+        vim.cmd [[packadd packer.nvim]]
+        return true
+    end
+    return false
+end
+local packer_bootstrap = ensure_packer()
+
+
+-- Reload configurations if we modify plugins.lua
+-- Hint
+--     <afile> - replaced with the filename of the buffer being manipulated
+vim.cmd([[
+  augroup packer_user_config
+    autocmd!
+    autocmd BufWritePost plugins.lua source <afile> | PackerSync
+  augroup end
+]])
 
 -- Only required if you have packer configured as `opt`
 vim.cmd [[packadd packer.nvim]]
@@ -39,9 +62,12 @@ return require('packer').startup(function(use)
 
 
 	use('nvim-treesitter/nvim-treesitter', { run = ':TSUpdate' })
-	use('nvim-treesitter/playground')
-	use('theprimeagen/harpoon')
-	use('mbbill/undotree')
-	use('tpope/vim-fugitive')
+	use 'nvim-treesitter/playground'
+	use 'mbbill/undotree'
+	use 'tpope/vim-fugitive'
+    use 'nvim-tree/nvim-web-devicons'
+    use 'lewis6991/gitsigns.nvim'
+    use 'romgrk/barbar.nvim'
+    use 'nvim-tree/nvim-tree.lua'
 end)
 
