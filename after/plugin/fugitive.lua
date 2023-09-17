@@ -4,9 +4,9 @@ vim.keymap.set("n", "<C-g>p", function() vim.cmd.Git("push") end)
 local gitDiffOpen = false
 vim.keymap.set("n", "<C-g>d", function()
     if gitDiffOpen then
+        gitDiffOpen = false
         local name = vim.api.nvim_buf_get_name(0)
         if string.find(name, ".git") then
-            gitDiffOpen = false
             vim.cmd("bd " .. name)
         end
     else
@@ -19,9 +19,9 @@ end);
 local gitStatusOpen = false
 vim.keymap.set("n", "<C-g>s", function()
     if gitStatusOpen then
+        gitStatusOpen = false
         local name = vim.api.nvim_buf_get_name(0)
         if string.find(name, "") then
-            gitStatusOpen = false
             vim.cmd("bd " .. name)
         end
     else

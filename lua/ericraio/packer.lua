@@ -72,5 +72,6 @@ return require('packer').startup(function(use)
     use 'preservim/nerdtree'
     use 'Xuyuanp/nerdtree-git-plugin'
     use 'ryanoasis/vim-devicons'
+    use 'ii14/neorepl.nvim'
 end)
 
