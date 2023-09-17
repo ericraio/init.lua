@@ -1,5 +1,7 @@
--- Activate the NERDTree and navigate to the directory in which the new file should live. 
--- Then press m to bring up the NERDTree Filesystem Menu and choose a for "add child node". 
+-- Activate the NERDTree and navigate to the directory in which the new file
+-- should live. 
+-- Then press m to bring up the NERDTree Filesystem Menu and choose a 
+-- for "add child node". 
 -- Then simply enter the file's (or directory's name) and you're done.
 
 local open = true
