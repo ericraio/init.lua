@@ -135,10 +135,10 @@ Move.config = {
 		up = '<C-k>',
 
 		-- Move current line in Normal mode
-		line_left = '<A-H>',
-		line_right = '<A-L>',
-		line_down = '<A-J>',
-		line_up = '<A-K>',
+		line_left = '<C-h>',
+		line_right = '<C-l>',
+		line_down = '<C-j>',
+		line_up = '<C-k>',
   },
 
   -- Options which control moving behavior
