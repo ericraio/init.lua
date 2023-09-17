@@ -16,5 +16,4 @@ vim.keymap.set("n", "<C-g>b", function()
         gitBlameOpen = true
         vim.cmd.Git("blame")
     end
-
 end)
