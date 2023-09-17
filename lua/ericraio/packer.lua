@@ -37,14 +37,6 @@ return require('packer').startup(function(use)
 	}
 
 	use {
-		'rose-pine/neovim',
-		as = 'rose-pine',
-		config = function()
-			vim.cmd('colorscheme rose-pine')
-		end
-	}
-
-	use {
 		'VonHeikemen/lsp-zero.nvim',
 		branch = 'v3.x',
 		requires = {
@@ -62,12 +54,17 @@ return require('packer').startup(function(use)
 
 
 	use('nvim-treesitter/nvim-treesitter', { run = ':TSUpdate' })
+    use 'shaunsingh/nord.nvim' -- nord theme
 	use 'nvim-treesitter/playground'
 	use 'mbbill/undotree'
 	use 'tpope/vim-fugitive'
-    use 'nvim-tree/nvim-web-devicons'
-    use 'lewis6991/gitsigns.nvim'
+    use 'rcarriga/nvim-notify'
+    use 'nvim-tree/nvim-web-devicons' -- required for barbar
+    use 'lewis6991/gitsigns.nvim' -- required for barbar
     use 'romgrk/barbar.nvim'
-    use 'nvim-tree/nvim-tree.lua'
+
+    use 'preservim/nerdtree'
+    use 'Xuyuanp/nerdtree-git-plugin'
+    use 'ryanoasis/vim-devicons'
 end)
 
