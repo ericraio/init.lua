@@ -4,7 +4,7 @@
 -- for "add child node". 
 -- Then simply enter the file's (or directory's name) and you're done.
 
-local open = true
+local open = false
 
 -- Toggle NERDTree with refresh
 function ToggleNERDTreeWithRefresh()
