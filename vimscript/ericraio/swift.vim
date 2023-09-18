@@ -1,12 +1,8 @@
 command! -nargs=0 SwiftFormat call Swift_Format()
 nnoremap <silent> <Plug>(swift-format) :<C-u>call Swift_Format()<CR>
 
-" let g:syntastic_swift_checkers = ['swift-format']
-
 " Run swiftformat_on_save.sh script on save
 autocmd BufWritePre,FileWritePre *.swift :SwiftFormat
-
-"au BufWritePre,FileWritePre *.swift sile
 
 function! Swift_Format() abort
   let fname = fnamemodify(expand("%"), ':p:gs?\\?/?')
@@ -115,8 +111,8 @@ function! Exec(cmd, ...) abort
   let l:bin = a:cmd[0]
 
   " Lookup the full path, respecting settings such as 'go_bin_path'. On errors,
-  " CheckBinPath will show a warning for us.
-  let l:bin = CheckBinPath(l:bin)
+  " check_bin_path will show a warning for us.
+  let l:bin = check_bin_path(l:bin)
   if empty(l:bin)
     return ['', 1]
   endif
@@ -248,10 +244,10 @@ function! UpdateFile(source, target)
   endif
 endfunction
 
-" CheckBinPath checks whether the given binary exists or not and returns the
+" check_bin_path checks whether the given binary exists or not and returns the
 " path of the binary, respecting the go_bin_path and go_search_bin_path_first
 " settings. It returns an empty string if the binary doesn't exist.
-function! CheckBinPath(binpath) abort
+function! check_bin_path(binpath) abort
   " remove whitespaces if user applied something like 'goimports   '
   let binpath = substitute(a:binpath, '^\s*\(.\{-}\)\s*$', '\1', '')
 

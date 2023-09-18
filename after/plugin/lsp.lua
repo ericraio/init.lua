@@ -26,7 +26,7 @@ local on_attach = function(_, bufnr)
     -- require("nvim-navic").attach(client, bufnr)
 
     -- enable inlay hint
-    -- vim.lsp.buf.inlay_hint(0, true)
+    vim.lsp.buf.inlay_hint(0, true)
 
     -- vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
 
@@ -78,10 +78,7 @@ local on_attach = function(_, bufnr)
         "<cmd>lua require('goto-preview').goto_preview_implementation()<CR>",
         opts
     )
-    map(
-        bufnr,
-        'n',
-        'gpt',
+    map(bufnr, 'n', 'gpt',
         "<cmd>lua require('goto-preview').goto_preview_type_definition()<CR>",
         opts
     )
@@ -193,7 +190,10 @@ if not configs.sourcekit_lsp then
         }
     }
 end
-lspconfig.sourcekit_lsp.setup({})
+lspconfig.sourcekit_lsp.setup({
+    on_attach = on_attach,
+    capabilities = capabilities
+})
 
 
 
