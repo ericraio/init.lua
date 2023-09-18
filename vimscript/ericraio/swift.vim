@@ -1,7 +1,6 @@
 command! -nargs=0 SwiftFormat call Swift_Format()
 nnoremap <silent> <Plug>(swift-format) :<C-u>call Swift_Format()<CR>
 
-" Run swiftformat_on_save.sh script on save
 autocmd BufWritePre,FileWritePre *.swift :SwiftFormat
 
 function! Swift_Format() abort
@@ -50,7 +49,61 @@ function! ShowErrors(errors) abort
 
   " this closes the window if there are no errors or it opens
   " it if there is any
-  call go#list#Window(l:listtype, len(a:errors))
+  call Window(l:listtype, len(a:errors))
+endfunction
+
+" Window opens the list with the given height up to 10 lines maximum.
+"
+" If no or zero height is given it closes the window by default.
+" To prevent this, set g:swift_list_autoclose = 0
+function! Window(listtype, ...) abort
+  " we don't use lwindow to close the location list as we need also the
+  " ability to resize the window. So, we are going to use lopen and lclose
+  " for a better user experience. If the number of errors in a current
+  " location list increases/decreases, cwindow will not resize when a new
+  " updated height is passed. lopen in the other hand resizes the screen.
+  if !a:0 || a:1 == 0
+    call Close(a:listtype)
+    return
+  endif
+
+  let height = ListHeight()
+  if height == 0
+    " prevent creating a large location height for a large set of numbers
+    if a:1 > 10
+      let height = 10
+    else
+      let height = a:1
+    endif
+  endif
+
+  if a:listtype == "locationlist"
+    exe 'lopen ' . height
+  else
+    exe 'copen ' . height
+  endif
+endfunction
+
+function! ListHeight() abort
+  return get(g:, "swift_list_height", 0)
+endfunction
+
+function! ListAutoclose() abort
+  return get(g:, 'swift_list_autoclose', 1)
+endfunction
+
+" Close closes the location list
+function! Close(listtype) abort
+  let autoclose_window = ListAutoclose()
+  if !autoclose_window
+    return
+  endif
+
+  if a:listtype == "locationlist"
+    lclose
+  else
+    cclose
+  endif
 endfunction
 
 " Populate populate the list with the given items
@@ -248,7 +301,7 @@ endfunction
 " path of the binary, respecting the go_bin_path and go_search_bin_path_first
 " settings. It returns an empty string if the binary doesn't exist.
 function! CheckBinPath(binpath) abort
-  " remove whitespaces if user applied something like 'goimports   '
+  " remove whitespaces if incase user applied it
   let binpath = substitute(a:binpath, '^\s*\(.\{-}\)\s*$', '\1', '')
 
   " save original path

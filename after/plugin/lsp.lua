@@ -2,6 +2,7 @@ local lsp = require("lsp-zero").preset({})
 local mason = require("mason")
 local mason_lspconfig = require("mason-lspconfig")
 local cmp = require('cmp')
+local cmp_nvim_lsp = require("cmp_nvim_lsp")
 local lspconfig = require('lspconfig')
 local configs = require('lspconfig.configs')
 local util = require('lspconfig.util')
@@ -190,12 +191,55 @@ if not configs.sourcekit_lsp then
         }
     }
 end
+
 lspconfig.sourcekit_lsp.setup({
     on_attach = on_attach,
     capabilities = capabilities
 })
 
+if not configs.vimls then
+    configs.vimls = {
+        default_config = {
+            name = 'vimls',
+            cmd = { 'vim-language-server' },
+            filetypes = { 'vim' },
+            root_dir = function(_) -- var fname
+                return vim.fn.getcwd()
+            end
+        }
+    }
+end
+lspconfig.vimls.setup({
+    on_attach = on_attach,
+    capabilities = capabilities
+})
 
+-- https://github.com/nicknisi/dotfiles/blob/6ab0b1d8d7fe888f6ba9bcc5cc1f98dfb435d246/config/nvim/lua/plugins/lsp/config.lua#L41
+local function make_conf(...)
+  local cap = vim.lsp.protocol.make_client_capabilities()
+  cap.textDocument.foldingRange = {
+    dynamicRegistration = false,
+    lineFoldingOnly = true,
+  }
+  cap.textDocument.completion.completionItem.snippetSupport = true
+  cap.textDocument.completion.completionItem.resolveSupport = {
+    properties = { "documentation", "detail", "additionalTextEdits", "documentHighlight" },
+  }
+  cap.textDocument.colorProvider = { dynamicRegistration = false }
+  cap= cmp_nvim_lsp.default_capabilities(cap)
+
+  return vim.tbl_deep_extend("force", {
+    handlers = {
+      ["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, { border = border }),
+      ["textDocument/signatureHelp"] = vim.lsp.with(vim.lsp.handlers.signature_help, { border = border }),
+      ["textDocument/formatting"] = format_async,
+      ["textDocument/publishDiagnostics"] = vim.lsp.with(vim.lsp.diagnostic.on_publish_diagnostics, {
+        virtual_text = true,
+      }),
+    },
+    capabilities = cap,
+  }, ...)
+end
 
 -- function CheckBackSpace()
 --   local col = vim.fn.col('.') - 1
