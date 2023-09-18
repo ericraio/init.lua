@@ -13,13 +13,9 @@ vim.keymap.set("n", "<leader>hs", vim.cmd.nohlsearch)
 -- it's not using the replaced word
 vim.keymap.set("x", "P", "\"_dP")
 
-vim.keymap.set("n", "<M-c>", "\"+y")
-vim.keymap.set("v", "<M-c>", "\"+y")
-vim.keymap.set("n", "<M-k>", "<nop>")
-vim.keymap.set("v", "<M-k>", "<nop>")
+vim.keymap.set({ "n", "v"}, "<M-c>", "\"+y")
 
-vim.keymap.set("n", "<leader>y", "\"+y")
-vim.keymap.set("v", "<leader>y", "\"+y")
+vim.keymap.set({ "n", "v" }, "<leader>y", "\"+y")
 vim.keymap.set("n", "<leader>Y", "\"+Y")
 
 -----------------
@@ -30,6 +26,7 @@ vim.keymap.set("n", "<Up>", "<nop>")
 vim.keymap.set("n", "<Down>", "<nop>")
 vim.keymap.set("n", "<Left>", "<nop>")
 vim.keymap.set("n", "<Right>", "<nop>")
+vim.keymap.set({ "n", "v" }, "<M-k>", "<nop>")
 
 vim.keymap.set("n", "<C-y>", function()
     vim.lsp.buf.format()
