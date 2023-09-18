@@ -1,5 +1,6 @@
 vim.keymap.set("n", "<C-g>c", function() vim.cmd.Git("commit") end)
 vim.keymap.set("n", "<C-g>p", function() vim.cmd.Git("push") end)
+vim.keymap.set("n", "<C-g>pu", function() vim.cmd.Git("pull") end)
 
 local gitDiffOpen = false
 vim.keymap.set("n", "<C-g>d", function()
