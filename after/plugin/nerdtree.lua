@@ -20,3 +20,4 @@ end
 
 -- Map ctrl-r to ToggleNERDTreeWithRefresh()
 vim.keymap.set('n', '<C-t>', ToggleNERDTreeWithRefresh, {noremap = true})
+vim.keymap.set('n', '<leader>n', ToggleNERDTreeWithRefresh, {noremap = true})
