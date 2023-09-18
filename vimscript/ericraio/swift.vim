@@ -111,8 +111,8 @@ function! Exec(cmd, ...) abort
   let l:bin = a:cmd[0]
 
   " Lookup the full path, respecting settings such as 'go_bin_path'. On errors,
-  " check_bin_path will show a warning for us.
-  let l:bin = check_bin_path(l:bin)
+  " CheckBinPath will show a warning for us.
+  let l:bin = CheckBinPath(l:bin)
   if empty(l:bin)
     return ['', 1]
   endif
@@ -244,10 +244,10 @@ function! UpdateFile(source, target)
   endif
 endfunction
 
-" check_bin_path checks whether the given binary exists or not and returns the
+" CheckBinPath checks whether the given binary exists or not and returns the
 " path of the binary, respecting the go_bin_path and go_search_bin_path_first
 " settings. It returns an empty string if the binary doesn't exist.
-function! check_bin_path(binpath) abort
+function! CheckBinPath(binpath) abort
   " remove whitespaces if user applied something like 'goimports   '
   let binpath = substitute(a:binpath, '^\s*\(.\{-}\)\s*$', '\1', '')
 
