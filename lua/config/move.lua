@@ -128,17 +128,17 @@ end
 Move.config = {
   -- Module mappings. Use `''` (empty string) to disable one.
   mappings = {
-		-- Move visual selection in Visual mode. Defaults are Ctrl + hjkl.
-		left = '<C-h>',
-		right = '<C-l>',
-		down = '<C-j>',
-		up = '<C-k>',
+    -- Move visual selection in Visual mode. Defaults are Ctrl + hjkl.
+    left = "<C-h>",
+    right = "<C-l>",
+    down = "<C-j>",
+    up = "<C-k>",
 
-		-- Move current line in Normal mode
-		line_left = '<A-h>',
-		line_right = '<A-l>',
-		line_down = '<A-j>',
-		line_up = '<A-k>',
+    -- Move current line in Normal mode
+    line_left = "<A-h>",
+    line_right = "<A-l>",
+    line_down = "<A-j>",
+    line_up = "<A-k>",
   },
 
   -- Options which control moving behavior
@@ -161,9 +161,11 @@ Move.config = {
 ---@param direction __move_direction
 ---@param opts __move_opts
 Move.move_selection = function(direction, opts)
-  if H.is_disabled() or not vim.o.modifiable then return end
+  if H.is_disabled() or not vim.o.modifiable then
+    return
+  end
 
-  opts = vim.tbl_deep_extend('force', H.get_config().options, opts or {})
+  opts = vim.tbl_deep_extend("force", H.get_config().options, opts or {})
 
   -- This could have been a one-line expression mappings, but there are issues:
   -- - Initial yanking modifies some register. Not critical, but also not good.
@@ -174,28 +176,32 @@ Move.move_selection = function(direction, opts)
   local cur_mode = vim.fn.mode()
 
   -- Act only inside visual mode
-  if not (cur_mode == 'v' or cur_mode == 'V' or cur_mode == '\22') then return end
+  if not (cur_mode == "v" or cur_mode == "V" or cur_mode == "\22") then
+    return
+  end
 
   -- Define common predicates
-  local dir_type = (direction == 'up' or direction == 'down') and 'vert' or 'hori'
-  local is_linewise = cur_mode == 'V'
+  local dir_type = (direction == "up" or direction == "down") and "vert" or "hori"
+  local is_linewise = cur_mode == "V"
 
   -- Cache useful data because it will be reset when executing commands
   local n_times = opts.n_times or vim.v.count1
-  local ref_curpos, ref_last_col = vim.fn.getcurpos(), vim.fn.col('$')
-  local is_cursor_on_selection_start = vim.fn.line('.') < vim.fn.line('v')
+  local ref_curpos, ref_last_col = vim.fn.getcurpos(), vim.fn.col("$")
+  local is_cursor_on_selection_start = vim.fn.line(".") < vim.fn.line("v")
 
   -- Determine if previous action was this type of move
   local is_moving = vim.deep_equal(H.state, H.get_move_state())
-  if not is_moving then H.curswant = nil end
+  if not is_moving then
+    H.curswant = nil
+  end
 
   -- Allow undo of consecutive moves at once (direction doesn't matter)
   local cmd = H.make_cmd_normal(is_moving)
 
   -- Treat horizontal linewise movement specially
-  if is_linewise and dir_type == 'hori' then
+  if is_linewise and dir_type == "hori" then
     -- Use indentation as horizontal movement for linewise selection
-    cmd(n_times .. H.indent_keys[direction] .. 'gv')
+    cmd(n_times .. H.indent_keys[direction] .. "gv")
 
     -- Make cursor move along selection
     H.correct_cursor_col(ref_curpos, ref_last_col)
@@ -210,10 +216,12 @@ Move.move_selection = function(direction, opts)
   -- This allows a more intuitive cursor positioning from and to end of line.
   -- NOTE: somehow, this should be done before initial cut to take effect.
   local cache_virtualedit = vim.o.virtualedit
-  if not cache_virtualedit:find('all') then vim.o.virtualedit = 'onemore' end
+  if not cache_virtualedit:find("all") then
+    vim.o.virtualedit = "onemore"
+  end
 
   -- Cut selection while saving caching register
-  local cache_z_reg = vim.fn.getreg('z')
+  local cache_z_reg = vim.fn.getreg("z")
   cmd('"zx')
 
   -- Detect edge selection: last line(s) for vertical and last character(s)
@@ -225,44 +233,52 @@ Move.move_selection = function(direction, opts)
   --     or last line up).
   -- Use condition that removed selection was further than current cursor
   -- to distinguish between two cases.
-  local is_edge_selection_hori = dir_type == 'hori' and vim.fn.col('.') < vim.fn.col("'<")
-  local is_edge_selection_vert = dir_type == 'vert' and vim.fn.line('.') < vim.fn.line("'<")
+  local is_edge_selection_hori = dir_type == "hori" and vim.fn.col(".") < vim.fn.col("'<")
+  local is_edge_selection_vert = dir_type == "vert" and vim.fn.line(".") < vim.fn.line("'<")
   local is_edge_selection = is_edge_selection_hori or is_edge_selection_vert
 
   -- Use `p` as paste key instead of `P` in cases which might require moving
   -- selection to place which is unreachable with `P`: right to be line end
   -- and down to be last line. NOTE: temporary `virtualedit=onemore` solves
   -- this only for horizontal movement, but not for vertical.
-  local can_go_overline = not is_linewise and direction == 'right'
-  local can_go_overbuf = is_linewise and direction == 'down'
-  local paste_key = (can_go_overline or can_go_overbuf) and 'p' or 'P'
+  local can_go_overline = not is_linewise and direction == "right"
+  local can_go_overbuf = is_linewise and direction == "down"
+  local paste_key = (can_go_overline or can_go_overbuf) and "p" or "P"
 
   -- Restore `curswant` to try move cursor to initial column (just like
   -- default `hjkl` moves)
-  if dir_type == 'vert' then H.set_curswant(H.curswant) end
+  if dir_type == "vert" then
+    H.set_curswant(H.curswant)
+  end
 
   -- Possibly reduce number of moves by one to not overshoot move
-  local n = n_times - ((paste_key == 'p' or is_edge_selection) and 1 or 0)
+  local n = n_times - ((paste_key == "p" or is_edge_selection) and 1 or 0)
 
   -- Don't allow movement past last line of block selection (any part)
-  if cur_mode == '\22' and direction == 'down' and vim.fn.line('$') == vim.fn.line("'>") then n = 0 end
+  if cur_mode == "\22" and direction == "down" and vim.fn.line("$") == vim.fn.line("'>") then
+    n = 0
+  end
 
   -- Move cursor
-  if n > 0 then cmd(n .. H.move_keys[direction]) end
+  if n > 0 then
+    cmd(n .. H.move_keys[direction])
+  end
 
   -- Save curswant. Correct for one less move when using `p` as paste.
-  H.curswant = H.get_curswant() + ((direction == 'right' and paste_key == 'p') and 1 or 0)
+  H.curswant = H.get_curswant() + ((direction == "right" and paste_key == "p") and 1 or 0)
 
   -- Open just enough folds (but not in linewise mode, as it allows moving
   -- past folds)
-  if not is_linewise then cmd('zv') end
+  if not is_linewise then
+    cmd("zv")
+  end
 
   -- Paste
   cmd('"z' .. paste_key)
 
   -- Select newly moved region. Another way is to use something like `gvhoho`
   -- but it doesn't work well with selections spanning several lines.
-  cmd('`[1v')
+  cmd("`[1v")
 
   -- Do extra in case of linewise selection
   if is_linewise then
@@ -270,17 +286,21 @@ Move.move_selection = function(direction, opts)
     -- NOTE: this sometimes doesn't work well with folds (and probably
     -- `foldmethod=indent`) and linewise mode because it recomputes folds after
     -- that and the whole "move past fold" doesn't work.
-    if opts.reindent_linewise and dir_type == 'vert' and vim.o.equalprg == '' then cmd('=gv') end
+    if opts.reindent_linewise and dir_type == "vert" and vim.o.equalprg == "" then
+      cmd("=gv")
+    end
 
     -- Move cursor along the selection. NOTE: do this *after* reindent to
     -- account for its effect.
     -- - Ensure that cursor is on the right side of selection
-    if is_cursor_on_selection_start then cmd('o') end
+    if is_cursor_on_selection_start then
+      cmd("o")
+    end
     H.correct_cursor_col(ref_curpos, ref_last_col)
   end
 
   -- Restore intermediate values
-  vim.fn.setreg('z', cache_z_reg)
+  vim.fn.setreg("z", cache_z_reg)
   vim.o.virtualedit = cache_virtualedit
 
   -- Track new state to allow joining in single undo block
@@ -300,9 +320,11 @@ end
 ---@param direction __move_direction
 ---@param opts __move_opts
 Move.move_line = function(direction, opts)
-  if H.is_disabled() or not vim.o.modifiable then return end
+  if H.is_disabled() or not vim.o.modifiable then
+    return
+  end
 
-  opts = vim.tbl_deep_extend('force', H.get_config().options, opts or {})
+  opts = vim.tbl_deep_extend("force", H.get_config().options, opts or {})
 
   -- Determine if previous action was this type of move
   local is_moving = vim.deep_equal(H.state, H.get_move_state())
@@ -312,10 +334,10 @@ Move.move_line = function(direction, opts)
 
   -- Cache useful data because it will be reset when executing commands
   local n_times = opts.n_times or vim.v.count1
-  local is_last_line_up = direction == 'up' and vim.fn.line('.') == vim.fn.line('$')
-  local ref_curpos, ref_last_col = vim.fn.getcurpos(), vim.fn.col('$')
+  local is_last_line_up = direction == "up" and vim.fn.line(".") == vim.fn.line("$")
+  local ref_curpos, ref_last_col = vim.fn.getcurpos(), vim.fn.col("$")
 
-  if direction == 'left' or direction == 'right' then
+  if direction == "left" or direction == "right" then
     -- Use indentation as horizontal movement. Explicitly call `count1` because
     -- `<`/`>` use `v:count` to define number of lines.
     -- Go to first non-blank at the end.
@@ -332,26 +354,30 @@ Move.move_line = function(direction, opts)
   end
 
   -- Cut curre lint while saving caching register
-  local cache_z_reg = vim.fn.getreg('z')
+  local cache_z_reg = vim.fn.getreg("z")
   cmd('"zdd')
 
   -- Move cursor
-  local paste_key = direction == 'up' and 'P' or 'p'
-  local n = n_times - ((paste_key == 'p' or is_last_line_up) and 1 or 0)
-  if n > 0 then cmd(n .. H.move_keys[direction]) end
+  local paste_key = direction == "up" and "P" or "p"
+  local n = n_times - ((paste_key == "p" or is_last_line_up) and 1 or 0)
+  if n > 0 then
+    cmd(n .. H.move_keys[direction])
+  end
 
   -- Paste
   cmd('"z' .. paste_key)
 
   -- Reindent and put cursor on first non-blank
-  if opts.reindent_linewise and vim.o.equalprg == '' then cmd('==') end
+  if opts.reindent_linewise and vim.o.equalprg == "" then
+    cmd("==")
+  end
 
   -- Move cursor along the selection. NOTE: do this *after* reindent to
   -- account for its effect.
   H.correct_cursor_col(ref_curpos, ref_last_col)
 
   -- Restore intermediate values
-  vim.fn.setreg('z', cache_z_reg)
+  vim.fn.setreg("z", cache_z_reg)
 
   -- Track new state to allow joining in single undo block
   H.state = H.get_move_state()
@@ -361,8 +387,8 @@ end
 -- Module default config
 H.default_config = Move.config
 
-H.move_keys = { left = 'h', down = 'j', up = 'k', right = 'l' }
-H.indent_keys = { left = '<', right = '>' }
+H.move_keys = { left = "h", down = "j", up = "k", right = "l" }
+H.indent_keys = { left = "<", right = ">" }
 
 -- Moving state used to decide when to start new undo block ...
 H.state = {
@@ -383,26 +409,26 @@ H.curswant = nil
 H.setup_config = function(config)
   -- General idea: if some table elements are not present in user-supplied
   -- `config`, take them from default config
-  vim.validate({ config = { config, 'table', true } })
-  config = vim.tbl_deep_extend('force', H.default_config, config or {})
+  vim.validate({ config = { config, "table", true } })
+  config = vim.tbl_deep_extend("force", H.default_config, config or {})
 
   vim.validate({
-    mappings = { config.mappings, 'table' },
-    options = { config.options, 'table' },
+    mappings = { config.mappings, "table" },
+    options = { config.options, "table" },
   })
 
   vim.validate({
-    ['mappings.left'] = { config.mappings.left, 'string' },
-    ['mappings.down'] = { config.mappings.down, 'string' },
-    ['mappings.up'] = { config.mappings.up, 'string' },
-    ['mappings.right'] = { config.mappings.right, 'string' },
+    ["mappings.left"] = { config.mappings.left, "string" },
+    ["mappings.down"] = { config.mappings.down, "string" },
+    ["mappings.up"] = { config.mappings.up, "string" },
+    ["mappings.right"] = { config.mappings.right, "string" },
 
-    ['mappings.line_left'] = { config.mappings.line_left, 'string' },
-    ['mappings.line_right'] = { config.mappings.line_right, 'string' },
-    ['mappings.line_down'] = { config.mappings.line_down, 'string' },
-    ['mappings.line_up'] = { config.mappings.line_up, 'string' },
+    ["mappings.line_left"] = { config.mappings.line_left, "string" },
+    ["mappings.line_right"] = { config.mappings.line_right, "string" },
+    ["mappings.line_down"] = { config.mappings.line_down, "string" },
+    ["mappings.line_up"] = { config.mappings.line_up, "string" },
 
-    ['options.reindent_linewise'] = { config.options.reindent_linewise, 'boolean' },
+    ["options.reindent_linewise"] = { config.options.reindent_linewise, "boolean" },
   })
 
   return config
@@ -426,20 +452,25 @@ H.apply_config = function(config)
   H.map('n', maps.line_up,    [[<Cmd>lua Move.move_line('up')<CR>]],    { desc = 'Move line up' })
 end
 
-H.is_disabled = function() return vim.g.minimove_disable == true or vim.b.minimove_disable == true end
+H.is_disabled = function()
+  return vim.g.minimove_disable == true or vim.b.minimove_disable == true
+end
 
-H.get_config =
-  function(config) return vim.tbl_deep_extend('force', Move.config, vim.b.minimove_config or {}, config or {}) end
+H.get_config = function(config)
+  return vim.tbl_deep_extend("force", Move.config, vim.b.minimove_config or {}, config or {})
+end
 
 -- Utilities ------------------------------------------------------------------
 H.map = function(mode, lhs, rhs, opts)
-  if lhs == '' then return end
-  opts = vim.tbl_deep_extend('force', { silent = true }, opts or {})
+  if lhs == "" then
+    return
+  end
+  opts = vim.tbl_deep_extend("force", { silent = true }, opts or {})
   vim.keymap.set(mode, lhs, rhs, opts)
 end
 
 H.make_cmd_normal = function(include_undojoin)
-  local normal_command = (include_undojoin and 'undojoin | ' or '') .. 'silent keepjumps normal! '
+  local normal_command = (include_undojoin and "undojoin | " or "") .. "silent keepjumps normal! "
 
   return function(x)
     -- Caching and restoring data on every command is not necessary but leads
@@ -472,14 +503,18 @@ H.correct_cursor_col = function(ref_curpos, ref_last_col)
   -- Use `ref_curpos = getcurpos()` instead of `vim.api.nvim_win_get_cursor(0)`
   -- allows to also account for `virtualedit=all`
 
-  local col_diff = vim.fn.col('$') - ref_last_col
+  local col_diff = vim.fn.col("$") - ref_last_col
   local new_col = math.max(ref_curpos[3] + col_diff, 1)
-  vim.fn.cursor({ vim.fn.line('.'), new_col, ref_curpos[4], ref_curpos[5] + col_diff })
+  vim.fn.cursor({ vim.fn.line("."), new_col, ref_curpos[4], ref_curpos[5] + col_diff })
 end
 
-H.get_curswant = function() return vim.fn.winsaveview().curswant end
+H.get_curswant = function()
+  return vim.fn.winsaveview().curswant
+end
 H.set_curswant = function(x)
-  if x == nil then return end
+  if x == nil then
+    return
+  end
   vim.fn.winrestview({ curswant = x })
 end
 
